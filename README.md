@@ -9,6 +9,11 @@ Dark Souls & Dark Souls 2
 =========================
 The tool is compatible with Dark Souls (1) and Dark Souls 2.
 
+Download
+========
+The latest binary can be downloaded here:
+http://www.hiale.net/projects/DarkSoulsSaveTool/DarkSoulsSaveTool.zip
+
 How to use it?
 ==============
 Extract the application to folder and run DarkSoulsSaveTool.exe.

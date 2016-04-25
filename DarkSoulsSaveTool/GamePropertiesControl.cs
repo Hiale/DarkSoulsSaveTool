@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using System.Drawing;
+﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 
@@ -7,78 +7,49 @@ namespace Hiale.DarkSoulsSaveTool
 {
     public partial class GamePropertiesControl : UserControl
     {
-        private static readonly Color Success = Color.Green;
-        private static readonly Color Failure = Color.Red;
+        public GamePropertiesControl()
+        {
+            InitializeComponent();
+        }
 
-        [EditorBrowsable(EditorBrowsableState.Always), Browsable(true), DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Bindable(true)]
+        [EditorBrowsable(EditorBrowsableState.Always), Browsable(true),
+         DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Bindable(true)]
         public string Title
         {
             get { return groupBox.Text; }
             set { groupBox.Text = value; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Always), Browsable(true), DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Bindable(true)]
+        [EditorBrowsable(EditorBrowsableState.Always), Browsable(true),
+         DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Bindable(true)]
         public string SourceFile
         {
             get { return txtSourceFile.Text; }
             set { txtSourceFile.Text = value; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Always), Browsable(true), DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Bindable(true)]
+        [EditorBrowsable(EditorBrowsableState.Always), Browsable(true),
+         DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Bindable(true)]
         public string TargetDirectory
         {
             get { return txtTargetDirectory.Text; }
             set { txtTargetDirectory.Text = value; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Always), Browsable(true), DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Bindable(true)]
+        [EditorBrowsable(EditorBrowsableState.Always), Browsable(true),
+         DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Bindable(true)]
         public string SourceFilePattern { get; set; }
 
-        public GamePropertiesControl()
-        {
-            InitializeComponent();
-        }
+        public event EventHandler<GenericEventArgs<string>> SourceFileChanged;
 
-        public void SetStatus(string text, bool failure = false)
-        {
-            lblStatus.Text = text;
-            lblStatus.ForeColor = failure ? Failure : Success;
-        }
+        public event EventHandler<GenericEventArgs<string>> TargetDirectoryChanged;
 
-        private void UpdateStatus()
-        {
-            // ReSharper disable LocalizableElement
-            var sourceOk = File.Exists(txtSourceFile.Text);
-            var targetOk = Directory.Exists(txtTargetDirectory.Text) && Helper.HasWriteAccess(txtTargetDirectory.Text);
-            if (sourceOk && targetOk)
-            {
-                lblStatus.Text = "Ready to play the game!";
-
-                lblStatus.ForeColor = Success;
-                return;
-            }
-            lblStatus.ForeColor = Failure;
-            if (!sourceOk && !targetOk)
-            {
-                lblStatus.Text = "The source file and the target directory must be set!";
-                return;
-            }
-            if (!sourceOk)
-            {
-                lblStatus.Text = "The source file does not exist!";
-
-                return;
-            }
-            lblStatus.Text = "The target directory is invalid!";
-            // ReSharper restore LocalizableElement
-        }
-
-        private void btnChooseSource_Click(object sender, System.EventArgs e)
+        private void btnChooseSource_Click(object sender, EventArgs e)
         {
             var dlg = new OpenFileDialog();
             var dir = Path.GetDirectoryName(txtSourceFile.Text);
             if (!string.IsNullOrEmpty(SourceFilePattern))
-                dlg.Filter = string.Format("Save files|{0}|All files (*.*)|*.*", SourceFilePattern);
+                dlg.Filter = $"Save files|{SourceFilePattern}|All files (*.*)|*.*";
             if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
             {
                 dlg.InitialDirectory = dir;
@@ -89,7 +60,7 @@ namespace Hiale.DarkSoulsSaveTool
             }
         }
 
-        private void btnChooseTarget_Click(object sender, System.EventArgs e)
+        private void btnChooseTarget_Click(object sender, EventArgs e)
         {
             var dlg = new FolderBrowserDialog {ShowNewFolderButton = true};
             if (Directory.Exists(txtTargetDirectory.Text))
@@ -102,9 +73,14 @@ namespace Hiale.DarkSoulsSaveTool
             }
         }
 
-        private void TextBoxTextChanged(object sender, System.EventArgs e)
+        private void txtSourceFile_TextChanged(object sender, EventArgs e)
         {
-            UpdateStatus();
+            SourceFileChanged?.Invoke(sender, new GenericEventArgs<string>(txtSourceFile.Text));
+        }
+
+        private void txtTargetDirectory_TextChanged(object sender, EventArgs e)
+        {
+            TargetDirectoryChanged?.Invoke(sender, new GenericEventArgs<string>(txtTargetDirectory.Text));
         }
     }
 }

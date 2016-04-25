@@ -43,9 +43,10 @@
             this.cmbLoadKey = new System.Windows.Forms.ComboBox();
             this.cmbSaveKey = new System.Windows.Forms.ComboBox();
             this.lblCopyright = new System.Windows.Forms.Label();
-            this.darkSouls2Properties = new Hiale.DarkSoulsSaveTool.GamePropertiesControl();
-            this.darkSoulsProperties = new Hiale.DarkSoulsSaveTool.GamePropertiesControl();
             this.toolTipDeleteSettings = new System.Windows.Forms.ToolTip(this.components);
+            this.cmbGameList = new System.Windows.Forms.ComboBox();
+            this.gameProperties = new Hiale.DarkSoulsSaveTool.GamePropertiesControl();
+            this.lblStatus = new System.Windows.Forms.Label();
             pictureBoxDeleteSettings = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(pictureBoxDeleteSettings)).BeginInit();
             this.trayMenu.SuspendLayout();
@@ -54,8 +55,9 @@
             // 
             // pictureBoxDeleteSettings
             // 
+            pictureBoxDeleteSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             pictureBoxDeleteSettings.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxDeleteSettings.Image")));
-            pictureBoxDeleteSettings.Location = new System.Drawing.Point(386, 285);
+            pictureBoxDeleteSettings.Location = new System.Drawing.Point(386, 206);
             pictureBoxDeleteSettings.Name = "pictureBoxDeleteSettings";
             pictureBoxDeleteSettings.Size = new System.Drawing.Size(24, 24);
             pictureBoxDeleteSettings.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -96,7 +98,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(497, 286);
+            this.btnCancel.Location = new System.Drawing.Point(497, 207);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 2;
@@ -107,7 +109,7 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(416, 286);
+            this.btnOK.Location = new System.Drawing.Point(416, 207);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 3;
@@ -173,37 +175,47 @@
             this.lblCopyright.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblCopyright.AutoSize = true;
             this.lblCopyright.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.lblCopyright.Location = new System.Drawing.Point(12, 296);
+            this.lblCopyright.Location = new System.Drawing.Point(9, 217);
             this.lblCopyright.Name = "lblCopyright";
-            this.lblCopyright.Size = new System.Drawing.Size(144, 13);
+            this.lblCopyright.Size = new System.Drawing.Size(174, 13);
             this.lblCopyright.TabIndex = 7;
-            this.lblCopyright.Text = "Copyright © Hiale 2013-2014";
+            this.lblCopyright.Text = "Copyright © Hiale 2013-2014, 2016";
             // 
-            // darkSouls2Properties
+            // cmbGameList
             // 
-            this.darkSouls2Properties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.cmbGameList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.darkSouls2Properties.Location = new System.Drawing.Point(12, 180);
-            this.darkSouls2Properties.Name = "darkSouls2Properties";
-            this.darkSouls2Properties.Size = new System.Drawing.Size(560, 100);
-            this.darkSouls2Properties.SourceFile = "";
-            this.darkSouls2Properties.SourceFilePattern = null;
-            this.darkSouls2Properties.TabIndex = 6;
-            this.darkSouls2Properties.TargetDirectory = "";
-            this.darkSouls2Properties.Title = "Dark Souls 2";
+            this.cmbGameList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbGameList.FormattingEnabled = true;
+            this.cmbGameList.Location = new System.Drawing.Point(12, 74);
+            this.cmbGameList.Name = "cmbGameList";
+            this.cmbGameList.Size = new System.Drawing.Size(560, 21);
+            this.cmbGameList.TabIndex = 9;
+            this.cmbGameList.SelectedIndexChanged += new System.EventHandler(this.cmbGameList_SelectedIndexChanged);
             // 
-            // darkSoulsProperties
+            // gameProperties
             // 
-            this.darkSoulsProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.gameProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.darkSoulsProperties.Location = new System.Drawing.Point(12, 74);
-            this.darkSoulsProperties.Name = "darkSoulsProperties";
-            this.darkSoulsProperties.Size = new System.Drawing.Size(560, 100);
-            this.darkSoulsProperties.SourceFile = "";
-            this.darkSoulsProperties.SourceFilePattern = null;
-            this.darkSoulsProperties.TabIndex = 5;
-            this.darkSoulsProperties.TargetDirectory = "";
-            this.darkSoulsProperties.Title = "Dark Souls";
+            this.gameProperties.Location = new System.Drawing.Point(12, 101);
+            this.gameProperties.Name = "gameProperties";
+            this.gameProperties.Size = new System.Drawing.Size(560, 100);
+            this.gameProperties.SourceFile = "";
+            this.gameProperties.SourceFilePattern = null;
+            this.gameProperties.TabIndex = 6;
+            this.gameProperties.TargetDirectory = "";
+            this.gameProperties.Title = "Game";
+            // 
+            // lblStatus
+            // 
+            this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Location = new System.Drawing.Point(9, 188);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(41, 13);
+            this.lblStatus.TabIndex = 10;
+            this.lblStatus.Text = "[status]";
             // 
             // MainForm
             // 
@@ -211,11 +223,12 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(584, 315);
+            this.ClientSize = new System.Drawing.Size(584, 238);
+            this.Controls.Add(this.lblStatus);
+            this.Controls.Add(this.cmbGameList);
             this.Controls.Add(pictureBoxDeleteSettings);
             this.Controls.Add(this.lblCopyright);
-            this.Controls.Add(this.darkSouls2Properties);
-            this.Controls.Add(this.darkSoulsProperties);
+            this.Controls.Add(this.gameProperties);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
@@ -243,10 +256,11 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox cmbLoadKey;
         private System.Windows.Forms.ComboBox cmbSaveKey;
-        private GamePropertiesControl darkSoulsProperties;
-        private GamePropertiesControl darkSouls2Properties;
+        private GamePropertiesControl gameProperties;
         private System.Windows.Forms.Label lblCopyright;
         private System.Windows.Forms.ToolTip toolTipDeleteSettings;
+        private System.Windows.Forms.ComboBox cmbGameList;
+        private System.Windows.Forms.Label lblStatus;
     }
 }
 

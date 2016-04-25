@@ -5,14 +5,10 @@ As you know the progress in Dark Souls is valuable. Therefore I created this sma
 It backups the Dark Souls Save file to a specific folder. DSfix by Durante also has backup
 functionalities. However, I wanted to have them in a different location.
 
-Dark Souls & Dark Souls 2
-=========================
-The tool is compatible with Dark Souls (1) and Dark Souls 2.
-
-Download
-========
-The latest binary can be downloaded here:
-http://www.hiale.net/projects/DarkSoulsSaveTool/DarkSoulsSaveTool.zip
+Dark Souls, Dark Souls 2 and Dark Souls 3
+=========================================
+The tool is compatible with Dark Souls (1), Dark Souls 2 and Dark Souls 3.
+Dark Souls 2: Scholar of the First Sin is not supported.
 
 How to use it?
 ==============
@@ -55,4 +51,4 @@ This software is licensed under GNU Lesser General Public License. See License.t
 
 Copyright
 =========
-Dark Souls & Dark Souls II © BANDAI NAMCO Games Inc. © Fromsoftware, Inc.
+Dark Souls © BANDAI NAMCO Games Inc. © Fromsoftware, Inc.

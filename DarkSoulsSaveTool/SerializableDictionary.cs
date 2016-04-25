@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Xml;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 
 namespace Hiale.DarkSoulsSaveTool
@@ -7,27 +9,27 @@ namespace Hiale.DarkSoulsSaveTool
     [XmlRoot("Dictionary")]
     public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
     {
-        public System.Xml.Schema.XmlSchema GetSchema()
+        public XmlSchema GetSchema()
         {
             return null;
         }
 
-        public void ReadXml(System.Xml.XmlReader reader)
+        public void ReadXml(XmlReader reader)
         {
-            var keySerializer = new XmlSerializer(typeof(TKey));
-            var valueSerializer = new XmlSerializer(typeof(TValue));
+            var keySerializer = new XmlSerializer(typeof (TKey));
+            var valueSerializer = new XmlSerializer(typeof (TValue));
             var wasEmpty = reader.IsEmptyElement;
             reader.Read();
             if (wasEmpty)
                 return;
-            while (reader.NodeType != System.Xml.XmlNodeType.EndElement)
+            while (reader.NodeType != XmlNodeType.EndElement)
             {
                 reader.ReadStartElement("Item");
                 reader.ReadStartElement("Key");
-                var key = (TKey)keySerializer.Deserialize(reader);
+                var key = (TKey) keySerializer.Deserialize(reader);
                 reader.ReadEndElement();
                 reader.ReadStartElement("Value");
-                var value = (TValue)valueSerializer.Deserialize(reader);
+                var value = (TValue) valueSerializer.Deserialize(reader);
                 reader.ReadEndElement();
                 Add(key, value);
                 reader.ReadEndElement();
@@ -36,10 +38,10 @@ namespace Hiale.DarkSoulsSaveTool
             reader.ReadEndElement();
         }
 
-        public void WriteXml(System.Xml.XmlWriter writer)
+        public void WriteXml(XmlWriter writer)
         {
-            var keySerializer = new XmlSerializer(typeof(TKey));
-            var valueSerializer = new XmlSerializer(typeof(TValue));
+            var keySerializer = new XmlSerializer(typeof (TKey));
+            var valueSerializer = new XmlSerializer(typeof (TValue));
             foreach (var key in Keys)
             {
                 writer.WriteStartElement("Item");

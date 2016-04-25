@@ -1,24 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Reflection;
 using System.Windows.Forms;
 
 namespace Hiale.DarkSoulsSaveTool
 {
+    // ReSharper disable LocalizableElement
     public partial class MainForm : Form
     {
-        private List<GameSaveData> _gameSaveDataList; 
+        private static readonly Color Success = Color.Green;
+        private static readonly Color Failure = Color.Red;
+        private List<GameSaveData> _gameSaveDataList;
 
         private Settings _settings;
 
         public MainForm()
         {
             InitializeComponent();
-            Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            lblCopyright.Text = string.Format("Version {0}, {1}", Assembly.GetExecutingAssembly().GetName().Version, lblCopyright.Text);
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            lblCopyright.Text = $"Version {Assembly.GetExecutingAssembly().GetName().Version}, {lblCopyright.Text}";
+            gameProperties.SourceFileChanged += GameProperties_SourceFileChanged;
+            gameProperties.TargetDirectoryChanged += GameProperties_TargetDirectoryChanged;
             Init();
         }
 
@@ -37,24 +44,25 @@ namespace Hiale.DarkSoulsSaveTool
         {
             var validSettings = Settings.Load(out _settings);
             _gameSaveDataList = new List<GameSaveData>();
-            GameSaveData gameSaveData = new DarkSoulsSaveData();
-            if (gameSaveData.Init())
+
+            var gameSaveDataTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type => type.IsSubclassOf(typeof (GameSaveData)));
+            foreach (var gameSaveDataType in gameSaveDataTypes)
             {
+                var gameSaveData = (GameSaveData) Activator.CreateInstance(gameSaveDataType);
+                if (!gameSaveData.Init())
+                    continue;
                 SetGameDataSettings(gameSaveData);
-                darkSoulsProperties.SourceFilePattern = gameSaveData.FilePattern;
                 _gameSaveDataList.Add(gameSaveData);
-                darkSoulsProperties.Tag = gameSaveData;
+                cmbGameList.Items.Add(gameSaveData);
             }
-            gameSaveData = new DarkSouls2SaveData();
-            if (gameSaveData.Init())
-            {
-                SetGameDataSettings(gameSaveData);
-                darkSouls2Properties.SourceFilePattern = gameSaveData.FilePattern;
-                _gameSaveDataList.Add(gameSaveData);
-                darkSouls2Properties.Tag = gameSaveData;
-            }
+
             if (_gameSaveDataList.Count < 1 || !validSettings)
+            {
                 _mAllowVisible = true;
+                SetStatus("No Game found", true);
+                cmbGameList.Items.Add(lblStatus.Text);
+            }
+            cmbGameList.SelectedIndex = 0;
             trayIcon.Icon = Icon;
             RegisterHotKeys();
         }
@@ -83,11 +91,168 @@ namespace Hiale.DarkSoulsSaveTool
             KeyboardHook.Unhook();
         }
 
+        private void BackupCommand(Keys key)
+        {
+            var gameSaveData = IsDarkSouls();
+            if (gameSaveData == null)
+                return;
+            try
+            {
+                if (!File.Exists(gameSaveData.SourceFile))
+                    throw new FileNotFoundException("Source file does not exist!");
+                var targetFilename = Path.GetFileName(gameSaveData.SourceFile);
+                if (targetFilename == null)
+                    return;
+                var targetFile = Path.Combine(gameSaveData.TargetDirectory, targetFilename);
+                File.Copy(gameSaveData.SourceFile, targetFile, true);
+                File.Copy(gameSaveData.SourceFile,
+                    $"{targetFile}-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}");
+                SystemSounds.Beep.Play();
+                SetStatus($"{gameSaveData.Name} - Success! Backup created!");
+            }
+            catch (Exception ex)
+            {
+                SystemSounds.Exclamation.Play();
+                SetStatus($"{gameSaveData.Name} - Error: {ex.Message}", true);
+            }
+        }
+
+        private void RestoreCommand(Keys key)
+        {
+            var gameSaveData = IsDarkSouls();
+            if (gameSaveData == null)
+                return;
+            try
+            {
+                var targetFilename = Path.GetFileName(gameSaveData.SourceFile);
+                if (targetFilename == null)
+                    return;
+                var sourceFile = Path.Combine(gameSaveData.TargetDirectory, targetFilename);
+                File.Copy(sourceFile, gameSaveData.SourceFile, true);
+                SystemSounds.Beep.Play();
+                SetStatus($"{gameSaveData.Name} - Success! Backup restored!");
+            }
+            catch (Exception ex)
+            {
+                SystemSounds.Exclamation.Play();
+                SetStatus($"{gameSaveData.Name} - Error: {ex.Message}", true);
+            }
+        }
+
+        private GameSaveData IsDarkSouls()
+        {
+            var windowTitle = Win32.GetActiveWindowTitle();
+            return _gameSaveDataList.FirstOrDefault(gameSaveData => windowTitle == gameSaveData.WindowTitle);
+        }
+
+
+        private void SaveSettings()
+        {
+            UnregisterHotKeys();
+            _settings.SaveKey = (Keys) cmbSaveKey.SelectedItem;
+            _settings.LoadKey = (Keys) cmbLoadKey.SelectedItem;
+            foreach (var gameSaveData in _gameSaveDataList)
+            {
+                _settings.AddSubSettingsValue(gameSaveData, "SourceFile", gameSaveData.SourceFile);
+                _settings.AddSubSettingsValue(gameSaveData, "TargetDirectory", gameSaveData.TargetDirectory);
+                SetGameDataSettings(gameSaveData);
+            }
+            RegisterHotKeys();
+            try
+            {
+                _settings.Save();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{"Settings could not be saved:"}\n{ex.Message}", Text, MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+            }
+        }
+
+        private void pictureBoxDeleteSettings_Click(object sender, EventArgs e)
+        {
+            if (
+                MessageBox.Show("Are you sure you want to delete your settings?", Text, MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.No)
+                return;
+            Settings.Delete();
+            MessageBox.Show("Settings deleted. This program will close now. You can then delete this folder.", Text,
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _mAllowClose = true;
+            Close();
+        }
+
+        private void cmbGameList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbGameList.SelectedItem is string)
+            {
+                gameProperties.Title = "Game";
+                gameProperties.Enabled = false;
+                return;
+            }
+            var item = cmbGameList.SelectedItem as GameSaveData;
+            if (item == null)
+                return;
+            gameProperties.Title = item.Name;
+            gameProperties.SourceFilePattern = item.FilePattern;
+            gameProperties.SourceFile = item.SourceFile;
+            gameProperties.TargetDirectory = item.TargetDirectory;
+            UpdateStatus(item);
+        }
+
+        private void GameProperties_SourceFileChanged(object sender, GenericEventArgs<string> e)
+        {
+            var gameSaveData = cmbGameList.SelectedItem as GameSaveData;
+            if (gameSaveData != null)
+                gameSaveData.SourceFile = e.Value;
+            UpdateStatus(gameSaveData);
+        }
+
+        private void GameProperties_TargetDirectoryChanged(object sender, GenericEventArgs<string> e)
+        {
+            var gameSaveData = cmbGameList.SelectedItem as GameSaveData;
+            if (gameSaveData != null)
+                gameSaveData.TargetDirectory = e.Value;
+            UpdateStatus(gameSaveData);
+        }
+
+        private void SetStatus(string text, bool failure = false)
+        {
+            lblStatus.Text = text;
+            lblStatus.ForeColor = failure ? Failure : Success;
+        }
+
+        private void UpdateStatus(GameSaveData gameSaveData)
+        {
+            var sourceOk = File.Exists(gameSaveData.SourceFile);
+            var targetOk = Directory.Exists(gameSaveData.TargetDirectory) &&
+                           Helper.HasWriteAccess(gameSaveData.TargetDirectory);
+            if (sourceOk && targetOk)
+            {
+                lblStatus.Text = "Ready to play the game!";
+                lblStatus.ForeColor = Success;
+                return;
+            }
+            lblStatus.ForeColor = Failure;
+            if (!sourceOk && !targetOk)
+            {
+                lblStatus.Text = "The source file and the target directory must be set!";
+                return;
+            }
+            if (!sourceOk)
+            {
+                lblStatus.Text = "The source file does not exist!";
+
+                return;
+            }
+            lblStatus.Text = "The target directory is invalid!";
+        }
+
         #region Tray
 
-        bool _mAllowVisible;     // ContextMenu's Show command used
-        bool _mAllowClose;       // ContextMenu's Exit command used
-        bool _mLoadFired;        // Form was shown once
+        private bool _mAllowVisible; // ContextMenu's Show command used
+        private bool _mAllowClose; // ContextMenu's Exit command used
+        private bool _mLoadFired; // Form was shown once
 
         protected override void SetVisibleCore(bool value)
         {
@@ -117,13 +282,6 @@ namespace Hiale.DarkSoulsSaveTool
             cmbSaveKey.SelectedItem = _settings.SaveKey;
             cmbLoadKey.DataSource = Enum.GetValues(typeof (Keys));
             cmbLoadKey.SelectedItem = _settings.LoadKey;
-
-            var gameSaveData = (GameSaveData) darkSoulsProperties.Tag;
-            darkSoulsProperties.SourceFile = gameSaveData.SourceFile;
-            darkSoulsProperties.TargetDirectory = gameSaveData.TargetDirectory;
-            gameSaveData = (GameSaveData) darkSouls2Properties.Tag;
-            darkSouls2Properties.SourceFile = gameSaveData.SourceFile;
-            darkSouls2Properties.TargetDirectory = gameSaveData.TargetDirectory;
         }
 
         private void MnuTrayShowClick(object sender, EventArgs e)
@@ -142,109 +300,7 @@ namespace Hiale.DarkSoulsSaveTool
         }
 
         #endregion
-
-        private void BackupCommand(Keys key)
-        {
-            var gameSaveData = IsDarkSouls();
-            if (gameSaveData == null)
-                return;
-            try
-            {
-                if (!File.Exists(gameSaveData.SourceFile))
-                    throw new FileNotFoundException("Source file does not exist!");
-                var targetFilename = Path.GetFileName(gameSaveData.SourceFile);
-                if (targetFilename == null)
-                    return;
-                var targetFile = Path.Combine(gameSaveData.TargetDirectory, targetFilename);
-                File.Copy(gameSaveData.SourceFile, targetFile, true);
-                File.Copy(gameSaveData.SourceFile, string.Format("{0}-{1}", targetFile, DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)));
-                System.Media.SystemSounds.Beep.Play();
-                var control = GetGamePropertiesControl(gameSaveData);
-                if (control != null)
-                    control.SetStatus(string.Format("Success! Backup created!"));
-            }
-            catch (Exception ex)
-            {
-                System.Media.SystemSounds.Exclamation.Play();
-                var control = GetGamePropertiesControl(gameSaveData);
-                if (control != null)
-                   control.SetStatus(string.Format("Error: {0}", ex.Message), true);
-            }
-        }
-
-        private void RestoreCommand(Keys key)
-        {
-            var gameSaveData = IsDarkSouls();
-            if (gameSaveData == null)
-                return;
-            try
-            {
-                var targetFilename = Path.GetFileName(gameSaveData.SourceFile);
-                if (targetFilename == null)
-                    return;
-                var sourceFile = Path.Combine(gameSaveData.TargetDirectory, targetFilename);
-                File.Copy(sourceFile, gameSaveData.SourceFile, true);
-                System.Media.SystemSounds.Beep.Play();
-                var control = GetGamePropertiesControl(gameSaveData);
-                if (control != null)
-                    control.SetStatus(string.Format("Success! Backup restored!"));
-            }
-            catch (Exception ex)
-            {
-                System.Media.SystemSounds.Exclamation.Play();
-                var control = GetGamePropertiesControl(gameSaveData);
-                if (control != null)
-                    control.SetStatus(string.Format("Error: {0}", ex.Message), true);
-            }
-        }
-
-        private GameSaveData IsDarkSouls()
-        {
-            string windowTitle = Win32.GetActiveWindowTitle();
-            return _gameSaveDataList.FirstOrDefault(gameSaveData => windowTitle == gameSaveData.WindowTitle);
-        }
-
-        private GamePropertiesControl GetGamePropertiesControl(GameSaveData gameSaveData)
-        {
-            if (darkSoulsProperties.Tag == gameSaveData)
-                return darkSoulsProperties;
-            if (darkSouls2Properties.Tag == gameSaveData)
-                return darkSouls2Properties;
-            return null;
-        }
-
-        private void SaveSettings()
-        {
-            UnregisterHotKeys();
-            _settings.SaveKey = (Keys)cmbSaveKey.SelectedItem;
-            _settings.LoadKey = (Keys)cmbLoadKey.SelectedItem;
-            _settings.AddSubSettingsValue(darkSoulsProperties.Tag, "SourceFile", darkSoulsProperties.SourceFile);
-            _settings.AddSubSettingsValue(darkSoulsProperties.Tag, "TargetDirectory", darkSoulsProperties.TargetDirectory);
-            SetGameDataSettings((GameSaveData) darkSoulsProperties.Tag);
-            _settings.AddSubSettingsValue(darkSouls2Properties.Tag, "SourceFile", darkSouls2Properties.SourceFile);
-            _settings.AddSubSettingsValue(darkSouls2Properties.Tag, "TargetDirectory", darkSouls2Properties.TargetDirectory);
-            SetGameDataSettings((GameSaveData)darkSouls2Properties.Tag);
-            RegisterHotKeys();
-            try
-            {
-                _settings.Save();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(string.Format("{0}\n{1}", "Settings could not be saved:", ex.Message), Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            }
-        }
-
-        private void pictureBoxDeleteSettings_Click(object sender, EventArgs e)
-        {
-            // ReSharper disable LocalizableElement
-            if (MessageBox.Show("Are you sure you want to delete your settings?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.No)
-                return;
-            Settings.Delete();
-            MessageBox.Show("Settings deleted. This program will close now. You can then delete this folder.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            _mAllowClose = true;
-            Close();
-            // ReSharper restore LocalizableElement
-        }
     }
+
+    // ReSharper restore LocalizableElement
 }

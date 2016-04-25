@@ -6,7 +6,9 @@ namespace Hiale.DarkSoulsSaveTool
 {
     public abstract class GameSaveData
     {
-        static internal Dictionary<string, string> SettingsValues = new Dictionary<string, string>();  
+        internal static Dictionary<string, string> SettingsValues = new Dictionary<string, string>();
+
+        public abstract string Name { get; }
 
         public abstract string WindowTitle { get; }
 
@@ -46,11 +48,21 @@ namespace Hiale.DarkSoulsSaveTool
             sourceFile = files.Length == 1 ? files[0] : null;
             return files.Length;
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 
     public class DarkSoulsSaveData : GameSaveData
     {
         private const string SaveSubDir = "NBGI\\DarkSouls";
+
+        public override string Name
+        {
+            get { return WindowTitle; }
+        }
 
         public override string WindowTitle
         {
@@ -83,6 +95,11 @@ namespace Hiale.DarkSoulsSaveTool
     {
         private const string SaveSubDir = "DarkSoulsII";
 
+        public override string Name
+        {
+            get { return WindowTitle; }
+        }
+
         public override string WindowTitle
         {
             get { return "DARK SOULS II"; }
@@ -95,6 +112,78 @@ namespace Hiale.DarkSoulsSaveTool
         public override string FilePattern
         {
             get { return "DARKSII*.sl2"; }
+        }
+
+        public override bool Init()
+        {
+            return FindSourceFile();
+        }
+
+        private bool FindSourceFile()
+        {
+            var sourceFile = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            sourceFile = Path.Combine(sourceFile, SaveSubDir);
+            return FindSourceFile(sourceFile);
+        }
+    }
+
+    //public class DarkSouls2ScholarSaveData : GameSaveData
+    //{
+    //    private const string SaveSubDir = "DarkSoulsII";
+
+    //    public override string Name
+    //    {
+    //        get { return "DARK SOULS II: Scholar of the First Sin (NOT TESTED)"; }
+    //    }
+
+    //    public override string WindowTitle
+    //    {
+    //        get { return "DARK SOULS II"; } //ToDo
+    //    }
+
+    //    public override string SourceFile { get; set; }
+
+    //    public override string TargetDirectory { get; set; }
+
+    //    public override string FilePattern
+    //    {
+    //        get { return "DS2SOFS*.sl2"; }
+    //    }
+
+    //    public override bool Init()
+    //    {
+    //        return FindSourceFile();
+    //    }
+
+    //    private bool FindSourceFile()
+    //    {
+    //        var sourceFile = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+    //        sourceFile = Path.Combine(sourceFile, SaveSubDir);
+    //        return FindSourceFile(sourceFile);
+    //    }
+    //}
+
+    public class DarkSouls3SaveData : GameSaveData
+    {
+        private const string SaveSubDir = "DarkSoulsIII";
+
+        public override string Name
+        {
+            get { return WindowTitle; }
+        }
+
+        public override string WindowTitle
+        {
+            get { return "DARK SOULS III"; }
+        }
+
+        public override string SourceFile { get; set; }
+
+        public override string TargetDirectory { get; set; }
+
+        public override string FilePattern
+        {
+            get { return "DS3*.sl2"; }
         }
 
         public override bool Init()

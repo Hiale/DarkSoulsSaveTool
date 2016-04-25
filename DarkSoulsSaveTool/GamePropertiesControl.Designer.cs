@@ -35,7 +35,6 @@
             this.btnChooseSource = new System.Windows.Forms.Button();
             this.txtSourceFile = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.lblStatus = new System.Windows.Forms.Label();
             this.groupBox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -43,7 +42,6 @@
             // 
             this.groupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox.Controls.Add(this.lblStatus);
             this.groupBox.Controls.Add(this.btnChooseTarget);
             this.groupBox.Controls.Add(this.txtTargetDirectory);
             this.groupBox.Controls.Add(this.label2);
@@ -52,7 +50,7 @@
             this.groupBox.Controls.Add(this.label1);
             this.groupBox.Location = new System.Drawing.Point(0, 0);
             this.groupBox.Name = "groupBox";
-            this.groupBox.Size = new System.Drawing.Size(560, 100);
+            this.groupBox.Size = new System.Drawing.Size(560, 80);
             this.groupBox.TabIndex = 2;
             this.groupBox.TabStop = false;
             this.groupBox.Text = "Game Title";
@@ -76,7 +74,7 @@
             this.txtTargetDirectory.Name = "txtTargetDirectory";
             this.txtTargetDirectory.Size = new System.Drawing.Size(414, 20);
             this.txtTargetDirectory.TabIndex = 2;
-            this.txtTargetDirectory.TextChanged += new System.EventHandler(this.TextBoxTextChanged);
+            this.txtTargetDirectory.TextChanged += new System.EventHandler(this.txtTargetDirectory_TextChanged);
             // 
             // label2
             // 
@@ -106,7 +104,7 @@
             this.txtSourceFile.Name = "txtSourceFile";
             this.txtSourceFile.Size = new System.Drawing.Size(414, 20);
             this.txtSourceFile.TabIndex = 0;
-            this.txtSourceFile.TextChanged += new System.EventHandler(this.TextBoxTextChanged);
+            this.txtSourceFile.TextChanged += new System.EventHandler(this.txtSourceFile_TextChanged);
             // 
             // label1
             // 
@@ -117,22 +115,13 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Source File";
             // 
-            // lblStatus
-            // 
-            this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(6, 79);
-            this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(43, 13);
-            this.lblStatus.TabIndex = 7;
-            this.lblStatus.Text = "[Status]";
-            // 
             // GamePropertiesControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox);
             this.Name = "GamePropertiesControl";
-            this.Size = new System.Drawing.Size(560, 100);
+            this.Size = new System.Drawing.Size(560, 80);
             this.groupBox.ResumeLayout(false);
             this.groupBox.PerformLayout();
             this.ResumeLayout(false);
@@ -148,6 +137,5 @@
         private System.Windows.Forms.Button btnChooseSource;
         private System.Windows.Forms.TextBox txtSourceFile;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label lblStatus;
     }
 }

@@ -53,6 +53,7 @@
       <DependentUpon>GamePropertiesControl.cs</DependentUpon>
     </Compile>
     <Compile Include="GameSaveData.cs" />
+    <Compile Include="GenericEventArgs.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="KeyboardHook.cs" />
     <Compile Include="MainForm.cs">
